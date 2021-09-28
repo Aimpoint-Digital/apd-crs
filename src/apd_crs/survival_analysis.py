@@ -11,7 +11,7 @@ Company: Aimpoint Digital, LP
 """
 import numpy as np
 from sklearn.linear_model import LogisticRegression  # type: ignore
-from sklearn.metrics import accuracy_score # type: ignore
+from sklearn.metrics import accuracy_score, log_loss # type: ignore
 from tqdm import tqdm # type: ignore
 from sksurv.metrics import concordance_index_censored as cindex  # type: ignore
 from apd_crs._parameters import _CENSOR_LABEL, _NON_CURE_LABEL, _CURE_LABEL, _LO_INT, \
@@ -283,6 +283,58 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
         self.classifier_.fit(training_data_, training_labels_estimated)
         self._is_fitted_ = True
         return self
+
+    def pu_fit_rs(self, training_data, training_labels, max_guesses=50):
+        """
+        Fits a model using censored and non censored inputs to estimate
+        cured/non-cured labels. The model is identified using random search
+
+        Parameters
+        ----------
+        training_data : {array-like} of shape
+                        (n_samples, n_features)
+              Training data
+
+        training_labels : {array-like} of shape (n_samples, 1)
+            Labels for the training data.
+            Value of _censor_label_ implies training point was censored,
+            and _non_censor_label_ implies non censored.
+            The _censor_label_ and _non_censor_label_ values can be obtained
+            with get_censor_label and get_non_censor_label methods
+
+        max_guesses : int, default=50
+            Maximum random guesses to generate and estimate pu labels
+
+        Returns
+        --------
+        self
+            Fitted estimator.
+        """
+        training_data_, training_labels_, _ = self._validate_train_data(training_data,
+                                                                        training_labels)
+
+        _, self.n_features = training_data_.shape
+        random_state = self.rnd_gen.integers(_LO_INT, _HI_INT)
+
+        n_cens = training_data_[training_labels_ == _CENSOR_LABEL]
+        probs = np.arange(0.0, 1.0, 1.0/max_guesses)
+
+        log_losses = {}
+        for prob in probs:
+            labels_guess = self.rnd_gen.binomial(1, prob, n_cens)
+            training_labels_guess = training_labels_.copy()
+            training_labels_guess[training_labels_guess == _CENSOR_LABEL] = labels_guess
+            self.classifier_ = LogisticRegression(random_state=random_state)
+            self.classifier_.fit(training_data_, training_labels_guess)
+            fit_probs = self.classifier_.predict_proba(training_data_)[:, 1]
+            log_losses[log_loss(training_labels_guess, fit_probs)] = training_labels_guess
+
+        training_labels_opt = log_losses[min(log_losses.keys())]
+        self.classifier_ = LogisticRegression(random_state=random_state)
+        self.classifier_.fit(training_data_, training_labels_opt)
+        self._is_fitted_ = True
+        return self
+
 
     def predict_overall_survival(self, test_data, times, test_labels=None):
         '''
