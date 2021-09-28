@@ -1,3 +1,7 @@
 sphinx>=1.4
 ipykernel
 nbsphinx
+ipython
+docutils==0.16
+setuptools_scm
+pydata-sphinx-theme>=0.6.0
