@@ -317,7 +317,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
         random_state = self.rnd_gen.integers(_LO_INT, _HI_INT)
 
         n_cens = training_data_[training_labels_ == _CENSOR_LABEL]
-        probs = np.arange(0.0, 1.0, 1.0/max_guesses)
+        probs = np.arange(0.1, 0.9, 1.0/max_guesses)
 
         log_losses = {}
         for prob in probs:
