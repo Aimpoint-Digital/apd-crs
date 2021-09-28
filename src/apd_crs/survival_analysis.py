@@ -1,8 +1,7 @@
 """
-Implementation of Cure Rate Survival Analysis, with the option to 
-use the Hard EM algorithm, based on the work by 
-Dr. Nemanja Kosovalic and Prof. Sandip Barui 
-(both formerly at the University of South Alabama).
+Implementation of the Hard-EM algorithm for mixture modelling arising in
+survival analysis, based on the work by Dr. Nemanja Kosovalic and
+Prof. Sandip Barui formerly at the University of South Alabama, USA.
 
 Primary Author: Nem Kosovalic (nem.kosovalic@aimpointdigital.com)
 
@@ -15,11 +14,11 @@ from sklearn.linear_model import LogisticRegression  # type: ignore
 from sklearn.metrics import accuracy_score # type: ignore
 from tqdm import tqdm # type: ignore
 from sksurv.metrics import concordance_index_censored as cindex  # type: ignore
-from _parameters import _CENSOR_LABEL, _NON_CURE_LABEL, _CURE_LABEL, _LO_INT, \
+from apd_crs._parameters import _CENSOR_LABEL, _NON_CURE_LABEL, _CURE_LABEL, _LO_INT, \
         _HI_INT
-from _validate import _val_train_data, _val_test_data, _validate_kwargs  # type: ignore
-from _estimate import _estimate_labels  # type: ignore
-from _survival_func import _survival_fit_weights, _overall_survival
+from apd_crs._validate import _val_train_data, _val_test_data, _validate_kwargs  # type: ignore
+from apd_crs._estimate import _estimate_labels  # type: ignore
+from apd_crs._survival_func import _survival_fit_weights, _overall_survival
 
 
 class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
@@ -295,11 +294,9 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
                     (n_samples, n_features)
             Test data
 
-
         times : {array-like} of shape (n_samples, k)
-            Time instants at which survival of an individual is to be
-            determined.
-            These time instants can be different for every training point
+            Times at which survival of an individual is to be determined. k can be greater than 1
+            when the survival of an individual at multiple time points is to be determined
 
         test_labels: {array-like} of shape (n_samples, 1), default=None
             Test labels indicating censored/non censored status for test data.
