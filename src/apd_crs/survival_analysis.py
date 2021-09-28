@@ -1,7 +1,8 @@
 """
-Implementation of the Hard-EM algorithm for mixture modelling arising in
-survival analysis, based on the work by Dr. Nemanja Kosovalic and
-Prof. Sandip Barui formerly at the University of South Alabama, USA.
+Implementation of Cure Rate Survival Analysis, with the option to 
+use the Hard EM algorithm, based on the work by 
+Dr. Nemanja Kosovalic and Prof. Sandip Barui 
+(both formerly at the University of South Alabama).
 
 Primary Author: Nem Kosovalic (nem.kosovalic@aimpointdigital.com)
 
@@ -14,11 +15,11 @@ from sklearn.linear_model import LogisticRegression  # type: ignore
 from sklearn.metrics import accuracy_score # type: ignore
 from tqdm import tqdm # type: ignore
 from sksurv.metrics import concordance_index_censored as cindex  # type: ignore
-from apd_crs._parameters import _CENSOR_LABEL, _NON_CURE_LABEL, _CURE_LABEL, _LO_INT, \
+from _parameters import _CENSOR_LABEL, _NON_CURE_LABEL, _CURE_LABEL, _LO_INT, \
         _HI_INT
-from apd_crs._validate import _val_train_data, _val_test_data, _validate_kwargs  # type: ignore
-from apd_crs._estimate import _estimate_labels  # type: ignore
-from apd_crs._survival_func import _survival_fit_weights, _overall_survival
+from _validate import _val_train_data, _val_test_data, _validate_kwargs  # type: ignore
+from _estimate import _estimate_labels  # type: ignore
+from _survival_func import _survival_fit_weights, _overall_survival
 
 
 class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
@@ -295,8 +296,10 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
             Test data
 
 
-        times : {array-like} of shape (n_samples, 1)
-            Time at which survival of an individual is to be determined
+        times : {array-like} of shape (n_samples, k)
+            Time instants at which survival of an individual is to be
+            determined.
+            These time instants can be different for every training point
 
         test_labels: {array-like} of shape (n_samples, 1), default=None
             Test labels indicating censored/non censored status for test data.
@@ -305,14 +308,14 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
 
         Returns
         -------
-        predictions : {array-like} of shape (n_samples, 1)
+        predictions : {array-like} of shape (n_samples, k)
             Overall survival function of any suspectible or non-susceptible
             individual
         '''
         test_data_ = self._validate_test_data(test_data)
         times_ = np.asarray(times)
-        n_test = len(test_data_)
-        if len(times_) != n_test:
+        n_test, n_times = times_.shape
+        if len(test_data_) != n_test:
             raise ValueError("Size of times and test_data do not match")
 
         probabilities = self.predict_cure_proba(test_data_, test_labels)
@@ -320,9 +323,9 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
             raise Exception("Fit survival function first by calling survival fit "
                             "or stochastic fit")
 
-        survival = [_overall_survival(times_[i], probabilities[i, 0], test_data_[i, :],
-                                      self.scale_, self.shape_, self.gamma_)
-                    for i in range(n_test)]
+        survival = [[_overall_survival(times_[i, j], probabilities[i, 0], test_data_[i, :],
+                                       self.scale_, self.shape_, self.gamma_)
+                     for j in range(n_times)] for i in range(n_test)]
         return np.array(survival, np.float_)
 
 
