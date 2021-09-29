@@ -1,7 +1,7 @@
 """
 Implementation of the Hard-EM algorithm for mixture modelling arising in
 survival analysis, based on the work by Dr. Nemanja Kosovalic and
-Prof. Sandip Barui formerly at the University of South Alabama, USA.
+Prof. Sandip Barui formerly at the University of South Alabama.
 
 Primary Author: Nem Kosovalic (nem.kosovalic@aimpointdigital.com)
 
@@ -284,7 +284,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
         self._is_fitted_ = True
         return self
 
-    def predict_overall_survival(self, test_data, times, test_labels=None):
+    def predict_overall_survival(self, test_data, test_times, test_labels=None):
         '''
         Predict overall survival function for test data based on fitting
         survival function.
@@ -294,7 +294,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
                     (n_samples, n_features)
             Test data
 
-        times : {array-like} of shape (n_samples, k)
+        test_times : {array-like} of shape (n_samples, k)
             Times at which survival of an individual is to be determined. k can be greater than 1
             when the survival of an individual at multiple time points is to be determined
 
@@ -310,8 +310,8 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
             individual
         '''
         test_data_ = self._validate_test_data(test_data)
-        times_ = np.asarray(times)
-        n_test, n_times = times_.shape
+        test_times_ = np.asarray(test_times)
+        n_test, n_times = test_times_.shape
         if len(test_data_) != n_test:
             raise ValueError("Size of times and test_data do not match")
 
@@ -320,7 +320,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
             raise Exception("Fit survival function first by calling survival fit "
                             "or stochastic fit")
 
-        survival = [[_overall_survival(times_[i, j], probabilities[i, 0], test_data_[i, :],
+        survival = [[_overall_survival(test_times_[i, j], probabilities[i, 0], test_data_[i, :],
                                        self.scale_, self.shape_, self.gamma_)
                      for j in range(n_times)] for i in range(n_test)]
         return np.array(survival, np.float_)
@@ -543,7 +543,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
         test_labels_ = np.asarray(test_labels) == non_cure_label
         return cindex(test_labels_, test_times, danger)[0]
 
-    def _fit_weights(self, training_data, training_labels, times, **kwargs):
+    def _fit_weights(self, training_data, training_labels, training_times, **kwargs):
         '''
         Fit the lifetime parameters and survival function and returns the fit
         weights
@@ -561,12 +561,12 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
             probabilities = self.predict_cure_proba(training_data)[:, 0]
 
         weights, errors, log_likelihood = \
-                _survival_fit_weights(training_data, training_labels, times,
+                _survival_fit_weights(training_data, training_labels, training_times,
                                       probabilities, **kwargs)
 
         return weights, errors, log_likelihood
 
-    def survival_fit(self, training_data, training_labels, times, **kwargs):
+    def survival_fit(self, training_data, training_labels, training_times, **kwargs):
         '''
         Fits the lifetime parameters and survival function and returns a fitted
         object
@@ -578,7 +578,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
         training_labels : {array-like} of shape (n_samples, n_features)
             Labels for training_data
 
-        times : {array-like} of shape (n_samples, 1)
+        training_times : {array-like} of shape (n_samples, 1)
             Times for all training points (censoring time or event time)
 
         Optional kwargs include:
@@ -604,11 +604,11 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
             Fitted estimator.
 
         '''
-        training_data_, training_labels_, times_ = self._validate_train_data(
-            training_data, training_labels, times)
+        training_data_, training_labels_, training_times_ = self._validate_train_data(
+            training_data, training_labels, training_times)
 
         weights, _, _ = self._fit_weights(training_data_, training_labels_,
-                                          times_, **kwargs)
+                                          training_times_, **kwargs)
         _, self.n_features = training_data_.shape
 
         self.shape_ = weights[0]
@@ -617,7 +617,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
 
         return self
 
-    def stochastic_fit(self, training_data, training_labels, times, # pylint: disable=too-many-arguments, too-many-locals
+    def stochastic_fit(self, training_data, training_labels, training_times, # pylint: disable=too-many-arguments, too-many-locals
                        **kwargs):
         '''
         Fits the lifetime parameters and survival function and returns a fitted
@@ -637,7 +637,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
         training_labels : {array-like} of shape (n_samples, n_features)
             Labels for training_data
 
-        times : {array-like} of shape (n_samples, 1)
+        training_times : {array-like} of shape (n_samples, 1)
             Times for all training points (censoringtime or event time)
 
         Optional kwargs include:
@@ -665,8 +665,8 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
             Fitted estimator.
         '''
 
-        training_data_, training_labels_, times_ = self._validate_train_data(
-            training_data, training_labels, times)
+        training_data_, training_labels_, training_times_ = self._validate_train_data(
+            training_data, training_labels, training_times)
         kwargs = _validate_kwargs(kwargs)
         batch_size = kwargs.get("surv_batch_size")
         _, self.n_features = training_data_.shape
@@ -690,7 +690,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
             indices = shuffled[batch_size*i:batch_size*(i+1)]
             data_chunk = training_data_[indices]
             label_chunk = training_labels_[indices]
-            time_chunk = times_[indices]
+            time_chunk = training_times_[indices]
 
             weights, _, _ = self._fit_weights(data_chunk, label_chunk, time_chunk,
                                               **kwargs)
