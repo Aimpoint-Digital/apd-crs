@@ -61,7 +61,7 @@ Using pip by running::
             <i class="fas fa-book-open tile-icon"></i>
             </h3>
             <div class="tile-desc">
-              <p>Step-by-step tutorials grounded in real world examples from manufacturing, churn, and marketing.</p>
+              <p>Real world examples from manufacturing, customer churn analytics, and marketing.</p>
             </div>
           </a>
         </div>
