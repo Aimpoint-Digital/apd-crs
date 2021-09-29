@@ -76,7 +76,8 @@ def load_melanoma(return_X_y=False):  # pylint: disable=invalid-name
     time_label = "time"
     target_label = "status"
     feature_names = ["sex", "age", "year", "thickness", "ulcer"]
-    data_frame[target_label].replace({2: _CENSOR_LABEL, 3: _CENSOR_LABEL, 1: _NON_CURE_LABEL})
+    data_frame[target_label].replace({2: _CENSOR_LABEL, 3: _CENSOR_LABEL, 1: _NON_CURE_LABEL},
+                                     inplace=True)
 
     return return_data(data_frame, feature_names, target_label, time_label, return_X_y)
 
@@ -118,7 +119,7 @@ def load_advertising(return_X_y=False):  # pylint: disable=invalid-name
     data_frame = pd.read_csv(ADVERTISING_FILE)
     time_label = None
     target_label = "Clicked on Ad"
-    data_frame[target_label].replace({0: _CENSOR_LABEL, 1: _NON_CURE_LABEL})
+    data_frame[target_label].replace({0: _CENSOR_LABEL, 1: _NON_CURE_LABEL}, inplace=True)
 
     feature_names = ["Daily Time Spent on Site", "Age", "Area Income", "Daily Internet Usage",
                      "Ad Topic Line", "City", "Male", "Country", "Timestamp"]
@@ -164,7 +165,7 @@ def load_manufacturing(return_X_y_t=False):  # pylint: disable=invalid-name
     time_label = "lifetime"
     target_label = "broken"
 
-    data_frame[target_label].replace({0: _CENSOR_LABEL, 1: _NON_CURE_LABEL})
+    data_frame[target_label].replace({0: _CENSOR_LABEL, 1: _NON_CURE_LABEL}, inplace=True)
 
     feature_names = ["pressureInd", "moistureInd", "temperatureInd", "team", "provider"]
 
@@ -208,7 +209,7 @@ def load_telco(return_X_y_t=False):  # pylint: disable=invalid-name
     data_frame = pd.read_csv(TELCO_FILE)
     time_label = "tenure"
     target_label = "Churn"
-    data_frame[target_label].replace({0: _CENSOR_LABEL, 1: _NON_CURE_LABEL})
+    data_frame[target_label].replace({"No": _CENSOR_LABEL, "Yes": _NON_CURE_LABEL}, inplace=True)
     feature_names = ["customerID", "gender", "SeniorCitizen", "Partner", "Dependents",
                      "PhoneService", "MultipleLines", "InternetService", "OnlineSecurity",
                      "OnlineBackup", "DeviceProtection", "TechSupport", "StreamingTV",
