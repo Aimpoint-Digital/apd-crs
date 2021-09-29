@@ -63,20 +63,7 @@ def _susc_survival(time, covariate_vector, scale, shape, gamma):
         assuming a Weibull distribution for the proportional _hazards model with the baseline
         _hazard function having given shape and scale will survive beyond given time
     """
-
-    _check_scale_shape(scale, shape)
-    exp = np.exp  # pylint: disable=no-member
-    dot = np.dot # pylint: disable=no-member
-    dot_product = dot(gamma, covariate_vector)
-    arg = (-((time/scale)**shape))*(exp(dot_product))
-    probability = exp(arg)
-
-    if probability < 0:
-        raise ValueError("Incorrect parameters for Weibull distribution. "
-                         "Estimated survival probability is negative")
-
-    return probability
-
+    return np.exp((-((time/scale)**shape))*(np.exp(np.dot(gamma, covariate_vector)))) # pylint: disable=no-member
 
 def _hazard(time, covariate_vector, scale, shape, gamma):
     """
@@ -107,19 +94,9 @@ def _hazard(time, covariate_vector, scale, shape, gamma):
         Hazard associated with a susceptible individual at time
     """
 
-    _check_scale_shape(scale, shape)
+    return shape*((time/scale)**(shape-1))*np.exp(np.dot(gamma, covariate_vector)) # pylint: disable=no-member
 
-    dot_product = np.dot(gamma, covariate_vector) # pylint: disable=no-member
-    exp = np.exp(dot_product) # pylint: disable=no-member
-    probability = shape*((time/scale)**(shape-1))*exp
-
-    if probability < 0:
-        raise RuntimeError(f"_hazard: {probability} is negatve")
-
-    return probability
-
-
-def _overall_survival(time, prob, covariate_vector, scale, shape, gamma): # pylint: disable=too-many-arguments
+def  _overall_survival(time, prob, covariate_vector, scale, shape, gamma): # pylint: disable=too-many-arguments
     """
     Predicts the overall survival function (Eq 18 from REFERENCE) based on given parameters.
     It is the combination of probability of being cured and the probability of surviving upto time
@@ -151,13 +128,7 @@ def _overall_survival(time, prob, covariate_vector, scale, shape, gamma): # pyli
         Overall survival function of any (susceptible or non-susceptible) individual
     """
 
-    _check_scale_shape(scale, shape)
-
-    out = prob + (1 - prob) * _susc_survival(time, covariate_vector, scale, shape, gamma)
-    if out < 0 or out > 1:
-        raise RuntimeError("Estimated probability for overall survival is not in [0, 1]")
-    return out
-
+    return prob + (1 - prob) * _susc_survival(time, covariate_vector, scale, shape, gamma)
 
 def _prob_density(time, prob, covariate_vector, scale, shape, gamma): # pylint: disable=too-many-arguments
     '''
@@ -189,13 +160,9 @@ def _prob_density(time, prob, covariate_vector, scale, shape, gamma): # pylint: 
         Overall survival function of any (susceptible or non-susceptible) individual
     '''
 
-    _check_scale_shape(scale, shape)
-
-    dot_product = np.dot(gamma, covariate_vector) # pylint: disable=no-member
-    exp = np.exp(dot_product) # pylint: disable=no-member
     # Adding the zero bound is a hack, but small values are problematic...
-    out = prob*(shape/scale)*((time/scale)**(shape-1))*exp + _ZERO_BOUND
-    return out
+    return (prob*(shape/scale)*((time/scale)**(shape-1))*np.exp(np.dot(gamma, covariate_vector)) + # pylint: disable=no-member
+            _ZERO_BOUND)
 
 def _generate_optimization_loss(training_data, training_labels, times, cure_probabilities,
                                 regularization_term):
@@ -213,30 +180,26 @@ def _generate_optimization_loss(training_data, training_labels, times, cure_prob
         '''
         Training loss for optimization
         '''
-        dot = np.dot  # pylint: disable=no-member
-        sum_arr = np.sum # pylint: disable=no-member
-        array = np.array
-        log = np.log # pylint: disable=no-member
         scale, shape, gamma = param[0], param[1], param[2:]
 
         # non-censored loss term
-        known_loss = [_prob_density(times[i], cure_probabilities[i], non_censored_inputs[i, :],
-                                    scale, shape, gamma) for i in range(n_noncens)]
-        known_loss = sum_arr(log(array(known_loss)))
+        known_loss = 0
+        for i in range(n_noncens):
+            known_loss += np.log(_prob_density(times[i], cure_probabilities[i], #pylint: disable=no-member
+                                               non_censored_inputs[i, :], scale, shape, gamma))
+        # known_loss = sum_arr(log(array(known_loss)))
 
         # censored loss term
-        unknown_loss = [_overall_survival(times[i], cure_probabilities[i], censored_inputs[i, :],
-                                          scale, shape, gamma) for i in range(n_cens)]
-        unknown_loss = sum_arr(log(array(unknown_loss)))
+        unknown_loss = 0
+        for i in range(n_cens):
+            unknown_loss += np.log(_overall_survival(times[i], cure_probabilities[i], #pylint: disable=no-member
+                                                     censored_inputs[i, :], scale, shape, gamma))
 
         # regularization term
-        reg = dot(gamma, gamma)*regularization_term
+        reg = np.dot(gamma, gamma)*regularization_term #pylint: disable=no-member
         return reg - 1/(n_cens + n_noncens)*(known_loss + unknown_loss)
 
-    gradient = grad(training_loss)  # pylint: disable=no-value-for-parameter
-    hess = hessian(training_loss) # pylint: disable=no-value-for-parameter
-
-    return training_loss, gradient, hess
+    return training_loss
 
 
 def _survival_fit_weights(training_data, training_labels, times, cure_probabilities,  # pylint: disable=too-many-locals, too-many-arguments
@@ -291,9 +254,12 @@ def _survival_fit_weights(training_data, training_labels, times, cure_probabilit
     reg_term = kwargs["surv_reg_term"]
     max_iter = kwargs["surv_max_iter"]
 
-    training_loss, gradient, hess = _generate_optimization_loss(training_data, training_labels,
-                                                                times, cure_probabilities,
-                                                                reg_term)
+    training_loss = _generate_optimization_loss(training_data, training_labels, times,
+                                                cure_probabilities, reg_term)
+
+    gradient = grad(training_loss)  # pylint: disable=no-value-for-parameter
+    hess = hessian(training_loss) # pylint: disable=no-value-for-parameter
+
 
     n_rows, n_features = training_data.shape
 
