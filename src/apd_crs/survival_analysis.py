@@ -1,7 +1,9 @@
 """
-Implementation of the Hard-EM algorithm for mixture modelling arising in
-survival analysis, based on the work by Dr. Nemanja Kosovalic and
-Prof. Sandip Barui formerly at the University of South Alabama.
+Implementation of the cure rate survival analysis, based on the work by 
+Dr. Nemanja Kosovalic and Prof. Sandip Barui, both formerly at the 
+University of South Alabama. Current implementation supports option
+to use Hard EM algorithm and SCAR (selected completely at random), 
+among others, for estimating cure probabilites.  
 
 Primary Author: Nem Kosovalic (nem.kosovalic@aimpointdigital.com)
 
