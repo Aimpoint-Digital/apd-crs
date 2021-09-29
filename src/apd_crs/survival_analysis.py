@@ -541,7 +541,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
 
         # Convert to boolean for use with sksurv
         test_labels_ = np.asarray(test_labels) == non_cure_label
-        return cindex(test_labels_, test_times, danger)
+        return cindex(test_labels_, test_times, danger)[0]
 
     def _fit_weights(self, training_data, training_labels, times, **kwargs):
         '''
