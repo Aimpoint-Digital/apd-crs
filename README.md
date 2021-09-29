@@ -5,4 +5,4 @@ apd-crs is a work in progress and maintained by a team of researchers and develo
 
 Source code for the package can be obtained [here](https://github.com/Aimpoint-Digital/apd-crs).
 
-Additional documentation can be obtained [here](readthedocs link).
+Additional documentation can be obtained [here](https://apd-crs.readthedocs.io/en/latest/).
