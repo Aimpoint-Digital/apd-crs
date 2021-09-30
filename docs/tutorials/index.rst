@@ -14,7 +14,7 @@ Tutorials
    
    Manufacturing
    Churn
-   PU_Learning
+   Marketing
    
    
 
