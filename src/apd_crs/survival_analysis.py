@@ -284,7 +284,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
         self._is_fitted_ = True
         return self
 
-    def pu_fit_rs(self, training_data, training_labels, max_guesses=50):
+    def pu_fit_rs(self, training_data, training_labels, max_guesses=50):  # pylint: disable=too-many-locals
         """
         Fits a model using censored and non censored inputs to estimate
         cured/non-cured labels. The model is identified using random search
@@ -316,7 +316,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
         _, self.n_features = training_data_.shape
         random_state = self.rnd_gen.integers(_LO_INT, _HI_INT)
 
-        n_cens = training_data_[training_labels_ == _CENSOR_LABEL]
+        n_cens = len(training_data_[training_labels_ == _CENSOR_LABEL])
         probs = np.arange(0.1, 0.9, 1.0/max_guesses)
 
         log_losses = {}
