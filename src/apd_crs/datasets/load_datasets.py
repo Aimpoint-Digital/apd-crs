@@ -215,5 +215,5 @@ def load_telco(return_X_y_t=False):  # pylint: disable=invalid-name
                      "OnlineBackup", "DeviceProtection", "TechSupport", "StreamingTV",
                      "StreamingMovies", "Contract", "PaperlessBilling", "PaymentMethod",
                      "MonthlyCharges", "TotalCharges"]
-
+    data_frame["TotalCharges"] = pd.to_numeric(data_frame["TotalCharges"], errors="coerce")
     return return_data(data_frame, feature_names, target_label, time_label, return_X_y_t)

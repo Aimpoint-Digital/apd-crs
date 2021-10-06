@@ -1,9 +1,9 @@
 """
-Implementation of the cure rate survival analysis, based on the work by 
-Dr. Nemanja Kosovalic and Prof. Sandip Barui, both formerly at the 
+Implementation of the cure rate survival analysis, based on the work by
+Dr. Nemanja Kosovalic and Prof. Sandip Barui, both formerly at the
 University of South Alabama. Current implementation supports option
-to use Hard EM algorithm and SCAR (selected completely at random), 
-among others, for estimating cure probabilites.  
+to use Hard EM algorithm and SCAR (selected completely at random),
+among others, for estimating cure probabilites.
 
 Primary Author: Nem Kosovalic (nem.kosovalic@aimpointdigital.com)
 
@@ -400,7 +400,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
                     (n_samples, n_features)
             Test data
 
-        test_labels: {array-like} of shape (n_samples, 1), default=None
+        test_labels : {array-like} of shape (n_samples, 1), default=None
             Test labels indicating censored/non censored status for test data.
             Method will provide cure predictions for censored individuals
 
@@ -427,6 +427,72 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
         else:
             test_labels_ = None
         return self._predict_proba(test_data_, test_labels_, self._is_scar_)
+
+    def predict_danger(self, test_data, test_labels=None, weights=None):
+        """
+        Generate a value for the danger, a measure of risk associated with an individual of facing
+        the event. The absolute value of the number is unimportant. When comparing danger for two
+        individuals, their relative values are important.
+
+        Parameters
+        ----------
+        test_data : {array-like} of shape
+                    (n_samples, n_features)
+            Test data
+
+        test_labels : {array-like} of shape (n_samples, 1), default=None
+            Test labels indicating censored/non censored status for test data.
+            Method will provide cure predictions for censored individuals
+
+        weights : {array-like} of shape (2, 1), default=None
+            Normalizing weights for calculating danger. If None, weights of (0.5, 0.5) are used
+
+        Returns
+        -------
+        danger : {array-like} shape (n_samples, 1)
+            Danger associated with every individual in training set
+        """
+        if not self._is_fitted_:
+            raise Exception("This instance is not fitted yet. Call 'fit' first")
+
+        test_data_ = self._validate_test_data(test_data)
+
+        if self._is_scar_:
+            if test_labels is None:
+                raise ValueError("Model fit under SCAR Assumption. Must pass "
+                                 "censor labels in test data")
+
+            test_labels_ = np.asarray(test_labels)
+            if len(test_labels_) != len(test_data_):
+                raise ValueError("Size of test_labels and test_data don't match")
+
+        else:
+            test_labels_ = None
+
+        if weights is not None:
+            weights_ = np.asarray(weights)
+            if len(weights_) != 2:
+                raise ValueError("Size of weights array is not 2")
+
+        else:
+            weights_ = (0.5, 0.5)
+
+        danger = (weights_[0]*np.dot(test_data_, self.gamma_) +
+                  weights_[1]*np.log(self.predict_cure_proba(test_data_, test_labels_)[:, 1]))
+
+        return danger
+
+    def get_risk_factors(self):
+        '''
+        Returns the relative risk factors associated with every covariate in data set
+
+        Returns
+        -------
+        factors : {array-like} of shape (n_features, 1)
+            Relative weight of each factor in the dataset
+        '''
+        return self.gamma_
+
 
     def get_params(self, deep=True):
         """
