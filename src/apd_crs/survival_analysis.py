@@ -569,7 +569,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
             Mean accuracy
         """
 
-        test_data_ = np.assarray(test_data)
+        test_data_ = np.asarray(test_data)
         n_rows, _ = test_data.shape
         if n_rows != len(test_labels):
             raise ValueError(
