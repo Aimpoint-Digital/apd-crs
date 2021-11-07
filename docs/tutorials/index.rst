@@ -1,6 +1,6 @@
 .. _Tutorials:
 
-Step-by-step Tutorials
+Real-world Tutorials
 =======================
 
 Welcome! Please choose an industry-themed tutorial to begin.
