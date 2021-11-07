@@ -37,10 +37,11 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
 
     For every training point (a patient in a medical trial, or machine in a
     manufacturing dataset), we have three potential labels:
-        Cured: The event never occurs.
-        Non-cured: The event occurs at some (possibly unobserved) time.
-        Censored: The event does not occur during the time period, while it may
-        or may not occur later, but is unobserved.
+
+    Cured: The event never occurs.
+    Non-cured: The event occurs at some (possibly unobserved) time.
+    Censored: The event does not occur during the time period, while it may or may not occur later,
+    but is unobserved.
 
     The methods in this class help estimate the labels (Cured/Non-cured) for
     each of the points in the censored group. Using the estimated labels, a
@@ -53,8 +54,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
 
     Parameters
     ----------
-    estimator : {'hard_EM', 'clustering', 'fifty_fifty', 'all_cens_cured'},
-                default='hard_EM'
+    estimator : {'hard_EM', 'clustering', 'fifty_fifty', 'all_cens_cured'}, default='hard_EM'
         The method used for estimating labels for censored training data.
         If 'hard_EM', the hard expectation maximization algorithm is utilized to
         estimate labels for censored population. If 'clustering', a clustering
@@ -190,8 +190,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
 
         Parameters
         ----------
-        training_data : {array-like} of shape
-                        (n_samples, n_features)
+        training_data : {array-like} of shape  (n_samples, n_features)
               Training data
 
         training_labels : {array-like} of shape (n_samples, 1)
@@ -290,10 +289,10 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
         '''
         Predict overall survival function for test data based on fitting
         survival function.
+
         Parameters
         ----------
-        test_data : {array-like} of shape
-                    (n_samples, n_features)
+        test_data : {array-like} of shape (n_samples, n_features)
             Test data
 
         test_times : {array-like} of shape (n_samples, k)
@@ -331,16 +330,15 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
     def predict_cure_labels(self, test_data, test_labels=None):
         """
         Predict cured/non-cured labels for data
+
         Parameters
         ----------
-        test_data : {array-like} of shape
-                    (n_samples, n_features)
+        test_data : {array-like} of shape (n_samples, n_features)
             Test data
 
         test_labels: {array-like} of shape (n_samples, 1), default=None
             Test labels indicating censored/non censored status for test data.
             Method will provide cure predictions for censored individuals
-
 
         Returns
         -------
@@ -394,10 +392,10 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
         """
         Generate probability estimates for each training point as to whether it
         is cured/noncured
+
         Parameters
         ----------
-        test_data : {array-like} of shape
-                    (n_samples, n_features)
+        test_data : {array-like} of shape (n_samples, n_features)
             Test data
 
         test_labels : {array-like} of shape (n_samples, 1), default=None
@@ -436,8 +434,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
 
         Parameters
         ----------
-        test_data : {array-like} of shape
-                    (n_samples, n_features)
+        test_data : {array-like} of shape (n_samples, n_features)
             Test data
 
         test_labels : {array-like} of shape (n_samples, 1), default=None
@@ -566,8 +563,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
         Returns the accuracy score on a given test_data provided labels
         Parameters
         ----------
-        test_data : {array-like} of shape
-                    (n_samples, n_features)
+        test_data : {array-like} of shape (n_samples, n_features)
             test data
 
         test_labels : {array-like} of shape (n_samples, 1)
@@ -607,7 +603,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
         test_labels : {array-like} of shape (n_samples, 1)
             Column indicating whether censored or event was observed
 
-        danger : (float)
+        danger : float
             Measures the risk of an individual. The higher the riskier. Sometimes
             taken as ln of proportionality factor (exponential term) from proportional
             hazard function. In this setting, a risk also incorporating the (non) cure
@@ -615,7 +611,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
 
         Returns
         -------
-        c-index: (float)
+        c-index: float
             Concordance index
         '''
         non_cure_label = self.get_non_cure_label()
@@ -651,6 +647,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
         '''
         Fits the lifetime parameters and survival function and returns a fitted
         object
+
         Parameters
         ----------
         training_data : {array-like} of shape (n_samples, n_features)
@@ -676,8 +673,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
             the dataset. In this situation, we find the probability of being NOT
             censored given covariates. The latter is then divided by an appropriate
             constant to get probability of being NOT cured.
-            See the paper https://cseweb.ucsd.edu/~elkan/posonly.pdf for more
-            details
+            See the paper https://cseweb.ucsd.edu/~elkan/posonly.pdf for more  details
 
         Returns
         -------
