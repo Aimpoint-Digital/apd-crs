@@ -494,6 +494,19 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
         return self.gamma_
 
 
+    def get_covariate_importance(self):
+        '''
+        Returns the relative weights for logistic regression for each covariate in data set
+
+        Returns
+        -------
+        factors : {array-like} of shape (n_features, 1)
+            Relative weight of each factor in the dataset
+
+        '''
+        return self.classifier_.coef_[0]
+
+
     def get_params(self, deep=True):
         """
         Get parameters for the estimator
