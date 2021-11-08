@@ -94,9 +94,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
     gamma_ : np.array
         Gamma parameter for survival function
 
-    Examples
-    --------
-    TODO: Fill
+    
 
     References
     ---------
