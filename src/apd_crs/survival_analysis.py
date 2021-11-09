@@ -60,7 +60,7 @@ class SurvivalAnalysis:  # pylint: disable=too-many-instance-attributes
         estimate labels for censored population. If 'clustering', a clustering
         model is built with a single cluster for the non-censored rows, and two
         clusters for the censored rows. By comparing the distance of the two
-        censored clusters to the noncensored cluster centor, cure labels are
+        censored clusters to the noncensored cluster center, cure labels are
         assigned to the censored rows. If 'fifty_fifty', each censored point is
         assigned to the cured/non-cured group with equal probability. Finally,
         'all-cens-cured' assumes that all censored population are cured.
